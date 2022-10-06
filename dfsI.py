@@ -36,7 +36,6 @@ def explorer(G, u):
     while not P.vide():
         temps = temps + 1
         u = P.depiler()
-        #print(u.marque)
         if(not u.marque and u.pre == -1):
             print(u.name)
             u.pre = temps
@@ -53,6 +52,15 @@ def DFS(G):
             explorer(G, u)
     return
 
+def importGraph(link):
+    file = open(link, "r")
+    V = []
+    for line in file:
+        line.replace("\n", "")
+        split = line.split(" ")
+        print(split)
+
+importGraph("Algo/G1.txt")
 a = Node(1)
 b = Node(2)
 c = Node(3)
@@ -64,18 +72,7 @@ h = Node(8)
 
 G = Graphe()
 G.V = [a,b,c,d,e,f,g,h]
-G.E = [[a,b],[b,a],[a,c],[c,a]]
+G.E = [[a,b],[b,a],[a,c],[c,a],[f,h]]
 
 
 DFS(G)
-
-""""
-P2 = Pile()
-print(P2.l)
-P2.empiler(1)
-P2.empiler(2)
-P2.empiler(3)
-print(P2.depiler())
-print(P2.depiler())
-print(P2.depiler())
-print(P2.l)"""
