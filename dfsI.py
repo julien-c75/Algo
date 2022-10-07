@@ -1,6 +1,7 @@
-from cProfile import label
 import graphviz as gpz
 
+
+##############################  Class #######################################
 class Node:
     def __init__(self, name):
         self.name = name
@@ -33,15 +34,17 @@ class Graphe:
         self.TE = None
         self.oriente = False
 
-    def print(self):
+    ####    Affichage   ####
+    
+    def graphImg(self):
         if self.V == [] or self.TE == None :
             print("Error print L.38")
             return
 
         if self.oriente:
-            g = gpz.Digraph("Algo/graph", filename="Algo/graph", format="png")
+            g = gpz.Digraph("graph", filename="graph", format="png")
         else:
-            g = gpz.Graph("Algo/graph", filename="Algo/graph", format="png")
+            g = gpz.Graph("graph", filename="graph", format="png")
 
         for v in self.V:
             g.node(v.name, v.name)
@@ -51,6 +54,21 @@ class Graphe:
             i = i + 1
 
         g.view()
+    
+    def printResult(self):
+        if self.TE == None:
+            DFS(self)
+        print("pre et post des toutes les Nodes :")
+        for v in self.V:
+            print("N", v.name, "\tpre", v.pre, "\tpost", v.post)
+        print("\nType de chaque arrêtes :")
+        i = 0
+        if self.oriente:
+            for e in self.E:
+                print(e[0].name, "-->" , e[1].name, "Type :", self.TE[i])
+                i = i + 1
+
+#################################   Type    #######################################
 
 def typeEdges(G):
     TE = []
@@ -63,31 +81,10 @@ def typeEdges(G):
             TE.append("T")
     G.TE = TE
     return
+    
+############################### Importation ######################################
 
-def explorer(G, u):
-    P = Pile()
-    P.empiler(u)
-    temps = 0
-    while not P.vide():
-        temps = temps + 1
-        u = P.depiler()
-        if(not u.marque and u.pre == -1):
-            u.pre = temps
-            P.empiler(u)
-            for e in G.E:
-                if(e[0] == u and not e[1].marque):
-                    P.empiler(e[1])
-        elif(u.post == -1):
-            u.post = temps
-
-def DFS(G):
-    for u in G.V:
-        if not u.marque:
-            explorer(G, u)
-    typeEdges(G)
-    return
-
-def importGraph(link):
+def importGraph(link, oriente):
     file = open(link, "r")
     V = [] #Nodes
     E = [] #Edges
@@ -114,11 +111,49 @@ def importGraph(link):
             else:
                 V.append(Node(e))
                 E.append([node[0], V[-1]])
-    return Graphe(V, E)
+    G = Graphe(V, E)
+    G.oriente = oriente
+    return G
 
-G = importGraph("Algo/G1.txt")
-G.oriente = True
+###################################   DFS   ###########################################
+
+def explorer(G, u, temps):
+    P = Pile()
+    P.empiler(u)
+    while not P.vide():
+        u = P.depiler()
+
+        #Si post est initialisé alors le noeud apartient a un arbre déjà visité
+        if u.post == -1:
+            temps = temps + 1
+
+        if(not u.marque and u.pre == -1):
+            u.pre = temps
+            P.empiler(u)
+            for e in G.E:
+                if G.oriente:
+                    if(e[0] == u and not e[1].marque):
+                        P.empiler(e[1])
+                else:
+                    if(e[0] == u and not e[1].marque):
+                        P.empiler(e[1])
+                    elif(e[1] == u and not e[1].marque):
+                        P.empiler(e[0])
+        elif(u.post == -1):
+            u.post = temps
+    return temps
+
+def DFS(G):
+    temps = 0
+    for u in G.V:
+        if not u.marque:
+            temps = explorer(G, u, temps)
+    typeEdges(G)
+    return G
+
+##############################################  Main    ##################################
+
+G = importGraph("G1.txt", True)
 DFS(G)
-for v in G.V:
-    print(v.pre, v.post)
-G.print()
+G.graphImg()
+G.printResult()
